@@ -1,0 +1,7 @@
+{
+  "name": "medsync",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

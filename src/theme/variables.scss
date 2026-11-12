@@ -1,0 +1,46 @@
+/* MedSync design tokens + Ionic colour overrides */
+:root {
+  --ms-primary: #0057e5;
+  --ms-primary-soft: #e8f0fe;
+  --ms-bg: #f7f7f7;
+  --ms-card: #ffffff;
+  --ms-line: #e5e7eb;
+  --ms-text: #26282c;
+  --ms-muted: #6b7280;
+  --ms-major: #d92d20;
+  --ms-major-soft: #fdecea;
+  --ms-moderate: #b54708;
+  --ms-moderate-soft: #fff4e5;
+  --ms-minor: #175cd3;
+  --ms-minor-soft: #e8f0fe;
+  --ms-ok: #16833a;
+  --ms-ok-soft: #e7f6ec;
+
+  --ion-font-family: 'Roboto', 'Tajawal', system-ui, sans-serif;
+  --ion-background-color: var(--ms-bg);
+  --ion-background-color-rgb: 247, 247, 247;
+  --ion-text-color: var(--ms-text);
+  --ion-text-color-rgb: 38, 40, 44;
+  --ion-border-color: var(--ms-line);
+
+  --ion-color-primary: #0057e5;
+  --ion-color-primary-rgb: 0, 87, 229;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #004dca;
+  --ion-color-primary-tint: #1a68e8;
+
+  --ion-color-danger: #d92d20;
+  --ion-color-danger-rgb: 217, 45, 32;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #bf281c;
+  --ion-color-danger-tint: #dd4236;
+
+  --ion-color-success: #16833a;
+  --ion-color-success-rgb: 22, 131, 58;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #137433;
+  --ion-color-success-tint: #2d9049;
+}
