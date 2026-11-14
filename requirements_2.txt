@@ -1,7 +1,0 @@
-opencv-python>=4.8
-numpy
-pandas
-openpyxl
-Pillow
-pytesseract        # plus the Tesseract binary:  apt install tesseract-ocr   /   brew install tesseract
-# optional: easyocr (better OCR on curved/glossy packs; --engine easyocr)

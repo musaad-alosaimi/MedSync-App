@@ -36,7 +36,7 @@ const UNITS: FreqUnit[] = ['hour', 'day', 'week'];
           }
         </div>
         <header class="bar">
-          <button type="button" class="bar-back" [attr.aria-label]="t('common.back')" (click)="back()"><ion-icon name="chevron-back" [flipRtl]="false" /></button>
+          <button type="button" class="bar-back" [attr.aria-label]="t('common.back')" (click)="back()"><ion-icon name="chevron-back" flipRtl /></button>
           <h1>{{ title() }}</h1>
         </header>
 
@@ -99,7 +99,7 @@ const UNITS: FreqUnit[] = ['hour', 'day', 'week'];
               <button type="button" class="card date-row" (click)="pickDate()">
                 <ion-icon name="calendar-outline" />
                 <span [class.set]="!!startDate()">{{ startDate() ? i18n.formatDate(startDate()) : t('wiz.start') }}</span>
-                <ion-icon class="chev" name="chevron-forward" />
+                <ion-icon class="chev" name="chevron-forward" flipRtl />
               </button>
             </div>
           }
@@ -153,7 +153,7 @@ const UNITS: FreqUnit[] = ['hour', 'day', 'week'];
     .progress span.done { background: #1a56b7; }
     .bar { position: relative; height: 64px; display: flex; align-items: center; justify-content: center; }
     .bar h1 { margin: 0; font-size: 20px; font-weight: 500; }
-    .bar-back { position: absolute; left: 12px; top: 10px; width: 44px; height: 44px; border: 0; background: none; font-size: 26px; color: var(--ms-text); display: grid; place-items: center; }
+    .bar-back { position: absolute; inset-inline-start: 12px; top: 10px; width: 44px; height: 44px; border: 0; background: none; font-size: 26px; color: var(--ms-text); display: grid; place-items: center; }
     .pad { flex: 1; padding: 6px 20px 16px; }
     .foot { padding: 8px 20px calc(var(--ion-safe-area-bottom, 0px) + 20px); display: flex; flex-direction: column; gap: 6px; }
     .search { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--ms-line); border-radius: 18px; padding: 0 16px; height: 58px; margin-bottom: 14px; font-size: 22px; }
@@ -177,7 +177,6 @@ const UNITS: FreqUnit[] = ['hour', 'day', 'week'];
     .date-row span.set { color: var(--ms-primary); font-weight: 500; }
     .date-row ion-icon { font-size: 24px; }
     .date-row .chev { font-size: 20px; }
-    :host-context([dir='ltr']) .date-row .chev { transform: none; }
     .time-input { width: 100%; height: 84px; border-radius: 22px; border: 1px solid var(--ms-line); background: #fff; font: inherit; font-size: 40px; text-align: center; color: var(--ms-text); margin-bottom: 18px; }
     .chips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .chips button { border: 1px solid var(--ms-line); background: #fff; border-radius: 16px; padding: 12px 4px; font: inherit; font-size: 16px; color: var(--ms-text); display: flex; flex-direction: column; gap: 2px; align-items: center; }

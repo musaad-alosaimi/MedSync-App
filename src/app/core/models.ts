@@ -33,8 +33,15 @@ export interface Medication {
   createdAt: string;
 }
 
+export type Sex = 'F' | 'M';
+
 export interface HealthProfile {
   age: number | null;
+  /** Used by the clinical database for pregnancy / breastfeeding rules. */
+  sex: Sex | null;
+  /** null = not stated. Only meaningful when sex is 'F'. */
+  pregnant: boolean | null;
+  breastfeeding: boolean;
   /** Ids from CHRONIC_CONDITIONS or `custom:<text>`. */
   chronic: string[];
   /** Ids from ALLERGY_OPTIONS or `custom:<text>`. */
@@ -61,6 +68,8 @@ export type AlertKind =
   | 'longterm'
   | 'allergy'
   | 'polypharmacy'
+  | 'pregnancy'
+  | 'excipient'
   | 'unverified';
 
 export interface SafetyAlert {
@@ -72,10 +81,17 @@ export interface SafetyAlert {
   title: Bi;
   message: Bi;
   advice: Bi;
+  /** Set when the finding comes from the clinical database (server) rather than the on-device rules. */
+  origin?: 'database';
+  /** Verbatim database text behind a database finding (English). */
+  evidence?: string;
 }
 
 export const EMPTY_PROFILE: HealthProfile = {
   age: null,
+  sex: null,
+  pregnant: null,
+  breastfeeding: false,
   chronic: [],
   allergies: [],
   history: [],

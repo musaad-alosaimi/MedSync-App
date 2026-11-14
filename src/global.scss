@@ -44,7 +44,7 @@ ion-content {
 .back-btn {
   position: absolute;
   top: calc(var(--ion-safe-area-top, 0px) + 10px);
-  left: 12px;
+  inset-inline-start: 12px;
   width: 44px;
   height: 44px;
   display: grid;
@@ -243,7 +243,7 @@ ion-modal.sheet {
 
 .sheet-close {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 50%;
   transform: translateY(-50%);
   width: 44px;

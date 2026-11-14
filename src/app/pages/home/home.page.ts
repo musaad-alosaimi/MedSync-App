@@ -80,7 +80,7 @@ import { AlertModalComponent } from './alert-modal.component';
           @if (meds.active().length > 0) {
             <div class="row-head"><h2>{{ t('home.today') }}</h2><a routerLink="/tabs/meds" class="link">{{ t('home.seeall') }}</a></div>
             @for (m of meds.active().slice(0, 3); track m.id) {
-              <div class="card mini" dir="ltr">
+              <div class="card mini">
                 <div class="thumb"><app-med-icon [form]="m.form" [size]="34" /></div>
                 <div class="mini-info"><b>{{ m.name }}</b><span>{{ m.strength ? m.strength + ' | ' : '' }}{{ i18n.doseText(m) }} | {{ i18n.freqText(m) }}</span></div>
               </div>

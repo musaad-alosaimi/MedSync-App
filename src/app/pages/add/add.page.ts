@@ -13,12 +13,12 @@ import { I18n } from '../../core/i18n.service';
         <button type="button" class="card opt primary" (click)="go('/scan')">
           <span class="ico"><ion-icon name="camera" /></span>
           <span class="txt"><b>{{ t('add.scan') }}</b><small>{{ t('add.scan.sub') }}</small></span>
-          <ion-icon class="chev" name="chevron-forward" />
+          <ion-icon class="chev" name="chevron-forward" flipRtl />
         </button>
         <button type="button" class="card opt" (click)="go('/add-med')">
           <span class="ico"><ion-icon src="assets/icons/capsule-outline.svg" /></span>
           <span class="txt"><b>{{ t('add.manual') }}</b><small>{{ t('add.manual.sub') }}</small></span>
-          <ion-icon class="chev" name="chevron-forward" />
+          <ion-icon class="chev" name="chevron-forward" flipRtl />
         </button>
       </div>
     </ion-content>

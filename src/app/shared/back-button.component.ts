@@ -3,12 +3,12 @@ import { NavController } from '@ionic/angular';
 import { IonIcon } from '@ionic/angular';
 import { I18n } from '../core/i18n.service';
 
-/** Top-left back chevron (matches the design in both RTL and LTR). */
+/** Back chevron at the inline start (right in RTL, left in LTR); the icon flips with direction. */
 @Component({
   selector: 'app-back',
   imports: [IonIcon],
   template: `<button type="button" class="back-btn" [attr.aria-label]="i18n.t('common.back')" (click)="go()">
-    <ion-icon name="chevron-back" [flipRtl]="false" />
+    <ion-icon name="chevron-back" flipRtl />
   </button>`,
 })
 export class BackButtonComponent {

@@ -73,3 +73,13 @@ Thumbs.db
 android
 
 ios
+
+# Python clinical API
+server/.venv/
+__pycache__/
+*.pyc
+
+# Server secrets (VLM API key)
+server/.env
+server/.venv/
+__pycache__/

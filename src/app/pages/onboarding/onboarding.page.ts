@@ -11,7 +11,7 @@ import { StorageService } from '../../core/storage.service';
     <ion-content [scrollY]="false">
       <div class="screen onb" (touchstart)="touchStart($event)" (touchend)="touchEnd($event)">
         @if (index() > 0) {
-          <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="prev()"><ion-icon name="chevron-back" [flipRtl]="false" /></button>
+          <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="prev()"><ion-icon name="chevron-back" flipRtl /></button>
         }
         <button type="button" class="skip" (click)="finish()">{{ t('common.skip') }}</button>
 
@@ -72,7 +72,7 @@ import { StorageService } from '../../core/storage.service';
   `,
   styles: `
     .onb { padding-top: calc(var(--ion-safe-area-top, 0px) + 60px); }
-    .skip { position: absolute; top: calc(var(--ion-safe-area-top, 0px) + 14px); right: 20px; border: 0; background: none; font-size: 18px; color: var(--ms-text); padding: 6px; }
+    .skip { position: absolute; top: calc(var(--ion-safe-area-top, 0px) + 14px); inset-inline-end: 20px; border: 0; background: none; font-size: 18px; color: var(--ms-text); padding: 6px; }
     .visual { position: relative; height: 380px; display: grid; place-items: start center; margin-bottom: 8px; }
     .phone { width: 250px; height: 330px; border: 8px solid #111; border-bottom: 0; border-radius: 36px 36px 0 0; background: #fff; padding: 22px 14px; overflow: hidden; }
     .shelf { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-top: 18px; }

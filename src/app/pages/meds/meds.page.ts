@@ -29,7 +29,7 @@ type Filter = 'all' | 'active' | 'inactive';
         }
 
         @for (m of list(); track m.id) {
-          <div class="card row" dir="ltr" (click)="edit(m.id)" (keydown.enter)="edit(m.id)" tabindex="0" role="button">
+          <div class="card row" (click)="edit(m.id)" (keydown.enter)="edit(m.id)" tabindex="0" role="button">
             <div class="thumb"><app-med-icon [form]="m.form" [size]="44" /></div>
             <div class="info">
               <h3>{{ m.name }}</h3>

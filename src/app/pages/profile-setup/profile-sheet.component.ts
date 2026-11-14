@@ -1,9 +1,16 @@
 import { Component, Input, OnInit, computed, inject, signal } from '@angular/core';
 import { IonButton, IonIcon, ModalController } from '@ionic/angular';
 import { I18n } from '../../core/i18n.service';
+import { Sex } from '../../core/models';
 import { ALLERGY_OPTIONS, CHRONIC_CONDITIONS } from '../../core/safety/knowledge-base';
 
-export type SheetMode = 'age' | 'chronic' | 'allergies' | 'history' | 'notes';
+export interface SexValue {
+  sex: Sex | null;
+  pregnant: boolean | null;
+  breastfeeding: boolean;
+}
+
+export type SheetMode = 'age' | 'sex' | 'chronic' | 'allergies' | 'history' | 'notes';
 
 /** Bottom sheet used by the health-profile page: dismisses with the edited value. */
 @Component({
@@ -25,6 +32,29 @@ export type SheetMode = 'age' | 'chronic' | 'allergies' | 'history' | 'notes';
           @if (ageError()) {
             <p class="form-error" role="alert">{{ t('profile.age.invalid') }}</p>
           }
+        }
+        @case ('sex') {
+          <div class="list card">
+            @for (o of sexOptions; track o) {
+              <button type="button" class="row" [attr.aria-pressed]="sex() === o" (click)="setSex(o)">
+                <span class="circle" [class.on]="sex() === o">@if (sex() === o) {<ion-icon name="checkmark-circle" />}</span>
+                <span>{{ t(o === 'F' ? 'profile.sex.female' : 'profile.sex.male') }}</span>
+              </button>
+            }
+          </div>
+          @if (sex() === 'F') {
+            <div class="list card" style="margin-top: 12px">
+              <button type="button" class="row" [attr.aria-pressed]="pregnant()" (click)="pregnant.set(!pregnant())">
+                <span class="circle" [class.on]="pregnant()">@if (pregnant()) {<ion-icon name="checkmark-circle" />}</span>
+                <span>{{ t('profile.sex.pregnant') }}</span>
+              </button>
+              <button type="button" class="row" [attr.aria-pressed]="breastfeeding()" (click)="breastfeeding.set(!breastfeeding())">
+                <span class="circle" [class.on]="breastfeeding()">@if (breastfeeding()) {<ion-icon name="checkmark-circle" />}</span>
+                <span>{{ t('profile.sex.breastfeeding') }}</span>
+              </button>
+            </div>
+          }
+          <p class="hint">{{ t('profile.sex.hint') }}</p>
         }
         @case ('notes') {
           <textarea class="notes" rows="5" [placeholder]="t('profile.notes.ph')" [value]="text()" (input)="text.set($any($event.target).value)"></textarea>
@@ -70,6 +100,7 @@ export type SheetMode = 'age' | 'chronic' | 'allergies' | 'history' | 'notes';
     .circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #1f2937; display: grid; place-items: center; flex: none; font-size: 22px; background: transparent; padding: 0; color: #1f2937; }
     .circle.on { background: var(--ms-primary); border-color: var(--ms-primary); color: #fff; }
     .circle.plus { background: #f1f2f4; border-color: #f1f2f4; font-size: 24px; }
+    .hint { color: var(--ms-muted); font-size: 14px; line-height: 1.6; margin: 12px 2px 0; }
     .add-row .field-input { height: 48px; }
     .notes { width: 100%; border-radius: 16px; border: 1px solid var(--ms-line); background: #fff; padding: 14px 16px; font: inherit; font-size: 17px; resize: none; outline: none; }
   `,
@@ -78,7 +109,7 @@ export class ProfileSheetComponent implements OnInit {
   // Plain @Input()s: Ionic assigns componentProps directly onto the instance.
   @Input() mode: SheetMode = 'chronic';
   /** Initial value: number | null for age, string[] for lists, string for notes. */
-  @Input() initial: number | string[] | string | null = null;
+  @Input() initial: number | string[] | string | SexValue | null = null;
   protected modeSig = signal<SheetMode>('chronic');
 
   protected i18n = inject(I18n);
@@ -91,6 +122,10 @@ export class ProfileSheetComponent implements OnInit {
   protected adding = signal(false);
   protected draft = signal('');
   protected ageError = signal(false);
+  protected sexOptions: Sex[] = ['F', 'M'];
+  protected sex = signal<Sex | null>(null);
+  protected pregnant = signal(false);
+  protected breastfeeding = signal(false);
 
   protected options = computed(() => (this.modeSig() === 'chronic' ? CHRONIC_CONDITIONS : ALLERGY_OPTIONS));
   protected customItems = computed(() => this.selected().filter((s) => (this.modeSig() === 'history' ? true : s.startsWith('custom:'))));
@@ -99,13 +134,25 @@ export class ProfileSheetComponent implements OnInit {
   ngOnInit(): void {
     this.modeSig.set(this.mode);
     const v = this.initial;
-    if (this.mode === 'age') this.ageText.set(typeof v === 'number' ? String(v) : '');
+    if (this.mode === 'sex' && v && typeof v === 'object' && !Array.isArray(v)) {
+      this.sex.set(v.sex);
+      this.pregnant.set(v.pregnant === true);
+      this.breastfeeding.set(v.breastfeeding);
+    } else if (this.mode === 'age') this.ageText.set(typeof v === 'number' ? String(v) : '');
     else if (this.mode === 'notes') this.text.set(typeof v === 'string' ? v : '');
     else if (Array.isArray(v)) this.selected.set([...v]);
   }
 
   protected display(item: string): string {
     return item.startsWith('custom:') ? item.slice(7) : item;
+  }
+
+  protected setSex(s: Sex): void {
+    this.sex.set(s);
+    if (s === 'M') {
+      this.pregnant.set(false);
+      this.breastfeeding.set(false);
+    }
   }
 
   protected toggle(id: string): void {
@@ -136,6 +183,12 @@ export class ProfileSheetComponent implements OnInit {
         const n = Number(this.ageText());
         if (!Number.isFinite(n) || n < 1 || n > 120) return void this.ageError.set(true);
         return void this.modalCtrl.dismiss(Math.round(n), 'save');
+      }
+      case 'sex': {
+        const f = this.sex() === 'F';
+        // "not pregnant" is only recorded as `null` (not stated) so the app keeps reminding women of child-bearing age
+        const value: SexValue = { sex: this.sex(), pregnant: f && this.pregnant() ? true : null, breastfeeding: f && this.breastfeeding() };
+        return void this.modalCtrl.dismiss(value, 'save');
       }
       case 'notes':
         return void this.modalCtrl.dismiss(this.text().trim(), 'save');

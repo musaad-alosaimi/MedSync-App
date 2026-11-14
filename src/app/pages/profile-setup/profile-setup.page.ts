@@ -5,7 +5,7 @@ import { AuthService } from '../../core/auth.service';
 import { I18n } from '../../core/i18n.service';
 import { ProfileService } from '../../core/profile.service';
 import { ALLERGY_OPTIONS, CHRONIC_CONDITIONS, optionLabel } from '../../core/safety/knowledge-base';
-import { ProfileSheetComponent, SheetMode } from './profile-sheet.component';
+import { ProfileSheetComponent, SexValue, SheetMode } from './profile-sheet.component';
 
 interface Card {
   mode: SheetMode;
@@ -19,7 +19,7 @@ interface Card {
     <ion-content>
       <div class="screen">
         @if (editing) {
-          <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="nav.navigateBack('/tabs/settings')"><ion-icon name="chevron-back" [flipRtl]="false" /></button>
+          <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="nav.navigateBack('/tabs/settings')"><ion-icon name="chevron-back" flipRtl /></button>
         }
         <h1 class="center-title">{{ t('profile.title') }}</h1>
 
@@ -40,7 +40,7 @@ interface Card {
                 <b>{{ t('profile.' + c.mode) }}</b>
                 <small [class.filled]="c.summary() !== t('profile.tap')">{{ c.summary() }}</small>
               </span>
-              <ion-icon class="chev" name="chevron-forward" />
+              <ion-icon class="chev" name="chevron-forward" flipRtl />
             </button>
           }
         </div>
@@ -87,6 +87,7 @@ export class ProfileSetupPage {
 
   protected icons: Record<SheetMode, string> = {
     age: 'time-outline',
+    sex: 'person-outline',
     chronic: 'medkit-outline',
     allergies: 'alert-circle',
     history: 'calendar-outline',
@@ -97,8 +98,18 @@ export class ProfileSetupPage {
     return ids.length ? ids.map((i) => optionLabel(opts, i, this.i18n.lang())).join('، ') : this.t('profile.tap');
   }
 
+  private sexSummary(): string {
+    const p = this.p();
+    if (!p.sex) return this.t('profile.tap');
+    const parts = [this.t(p.sex === 'F' ? 'profile.sex.female' : 'profile.sex.male')];
+    if (p.pregnant) parts.push(this.t('profile.sex.pregnant'));
+    if (p.breastfeeding) parts.push(this.t('profile.sex.breastfeeding'));
+    return parts.join('، ');
+  }
+
   protected cards: Card[] = [
     { mode: 'age', summary: () => (this.p().age ? this.t('profile.yrs', { n: this.p().age! }) : this.t('profile.tap')) },
+    { mode: 'sex', summary: () => this.sexSummary() },
     { mode: 'chronic', summary: () => this.list(this.p().chronic, CHRONIC_CONDITIONS) },
     { mode: 'allergies', summary: () => this.list(this.p().allergies, ALLERGY_OPTIONS) },
     { mode: 'history', summary: () => (this.p().history.length ? this.p().history.join('، ') : this.t('profile.tap')) },
@@ -107,7 +118,8 @@ export class ProfileSetupPage {
 
   async open(mode: SheetMode): Promise<void> {
     const p = this.p();
-    const initial = mode === 'age' ? p.age : mode === 'chronic' ? p.chronic : mode === 'allergies' ? p.allergies : mode === 'history' ? p.history : p.notes;
+    const initial: number | string[] | string | SexValue | null =
+      mode === 'sex' ? { sex: p.sex, pregnant: p.pregnant, breastfeeding: p.breastfeeding } : mode === 'age' ? p.age : mode === 'chronic' ? p.chronic : mode === 'allergies' ? p.allergies : mode === 'history' ? p.history : p.notes;
     const m = await this.modal.create({
       component: ProfileSheetComponent,
       componentProps: { mode, initial },
@@ -117,6 +129,10 @@ export class ProfileSetupPage {
     await m.present();
     const { data, role } = await m.onWillDismiss();
     if (role !== 'save') return;
+    if (mode === 'sex') {
+      this.profileSvc.update(data as SexValue);
+      return;
+    }
     const key = mode === 'age' ? 'age' : mode === 'chronic' ? 'chronic' : mode === 'allergies' ? 'allergies' : mode === 'history' ? 'history' : 'notes';
     this.profileSvc.update({ [key]: data });
   }

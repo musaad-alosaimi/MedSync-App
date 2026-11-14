@@ -7,6 +7,8 @@ export interface Candidate {
   /** KB id when recognised, else free text name. */
   drug?: KbDrug;
   name: string;
+  /** Strength read from the pack, e.g. "400 mg". */
+  strength?: string;
   selected: boolean;
 }
 

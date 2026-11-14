@@ -1,9 +1,13 @@
 import { Component, ElementRef, OnDestroy, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonIcon, IonSpinner, NavController } from '@ionic/angular';
+import { ClinicalApiService } from '../../core/clinical/clinical-api.service';
+import { toApiPatient } from '../../core/clinical/clinical-mapper';
 import { I18n } from '../../core/i18n.service';
+import { ProfileService } from '../../core/profile.service';
 import { RecognitionService } from '../../core/recognition/recognition.service';
 import { Candidate, ScanSession } from '../../core/recognition/scan-session.service';
+import { resolveName } from '../../core/safety/knowledge-base';
 
 @Component({
   selector: 'app-scan',
@@ -11,7 +15,7 @@ import { Candidate, ScanSession } from '../../core/recognition/scan-session.serv
   template: `
     <ion-content [scrollY]="false">
       <div class="scan">
-        <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="nav.navigateBack('/tabs/home')"><ion-icon name="chevron-back" [flipRtl]="false" /></button>
+        <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="nav.navigateBack('/tabs/home')"><ion-icon name="chevron-back" flipRtl /></button>
         <h1>{{ t('scan.title') }}</h1>
 
         <div class="viewport">
@@ -46,6 +50,7 @@ import { Candidate, ScanSession } from '../../core/recognition/scan-session.serv
             <ion-button class="btn btn-white" [disabled]="busy()" (click)="demo()">{{ t('scan.demo') }}</ion-button>
           </div>
         </div>
+        <p class="priv">{{ t('scan.privacy') }}</p>
         <input #file type="file" accept="image/*" hidden (change)="picked($event)" />
       </div>
     </ion-content>
@@ -71,6 +76,7 @@ import { Candidate, ScanSession } from '../../core/recognition/scan-session.serv
     .secondary { display: flex; gap: 10px; }
     .secondary .btn { height: 50px; font-size: 16px; --padding-start: 10px; --padding-end: 10px; }
     .err { margin: 12px 20px 0; }
+    .priv { margin: 10px 20px 0; color: #a1a1aa; font-size: 12px; line-height: 1.5; text-align: center; }
   `,
 })
 export class ScanPage implements OnDestroy {
@@ -80,6 +86,8 @@ export class ScanPage implements OnDestroy {
   private router = inject(Router);
   private recognition = inject(RecognitionService);
   private session = inject(ScanSession);
+  private api = inject(ClinicalApiService);
+  private profile = inject(ProfileService);
 
   private video = viewChild.required<ElementRef<HTMLVideoElement>>('video');
   private stream?: MediaStream;
@@ -142,6 +150,11 @@ export class ScanPage implements OnDestroy {
     this.busy.set(true);
     this.error.set('');
     this.session.reset();
+    // 1) the Python server (OCR, then a vision-model fallback, then the clinical database); 2) on-device OCR if it is unreachable or finds nothing
+    if (await this.processOnServer(blob)) {
+      this.busy.set(false);
+      return;
+    }
     const url = URL.createObjectURL(blob);
     try {
       const r = await this.recognition.identify(blob);
@@ -155,6 +168,38 @@ export class ScanPage implements OnDestroy {
       this.error.set(this.t('scan.error'));
     } finally {
       this.busy.set(false);
+    }
+  }
+
+  /** Returns true when the server found at least one medicine and the review page was opened. */
+  private async processOnServer(blob: Blob): Promise<boolean> {
+    try {
+      const res = await this.api.scan(blob, toApiPatient(this.profile.profile()));
+      const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
+      const candidates = res.packages.flatMap<Candidate>((p) => {
+        if (p.status === 'identified' && p.ingredients.length) {
+          return [
+            {
+              // a KB id only for a single-ingredient pack, so the on-device rules still apply to it
+              drug: p.ingredients.length === 1 ? resolveName(p.ingredients[0]) : undefined,
+              name: p.brand ?? p.ingredients.map(cap).join(' / '),
+              strength: Object.values(p.strengths)[0],
+              // vision-model reads the model was unsure about are offered unticked so the user confirms them
+              selected: !p.vision?.low_trust,
+            },
+          ];
+        }
+        // The vision model saw something the database does not know: offer it unticked so the user decides.
+        const seen = p.vision?.brand ?? p.vision?.ingredients[0];
+        return seen ? [{ name: seen, strength: p.vision?.strength ?? undefined, selected: false }] : [];
+      });
+      if (!candidates.some((c) => c.selected || res.engine?.includes('vision'))) return false;
+      this.session.imageUrl.set(res.annotated_png_base64 ? `data:image/png;base64,${res.annotated_png_base64}` : URL.createObjectURL(blob));
+      this.session.candidates.set(candidates);
+      this.router.navigateByUrl('/scan-review');
+      return true;
+    } catch {
+      return false; // offline / server down: fall back to on-device OCR
     }
   }
 

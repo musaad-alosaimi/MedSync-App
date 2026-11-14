@@ -13,7 +13,7 @@ import { KbDrug, searchDrugs } from '../../core/safety/knowledge-base';
   template: `
     <ion-content>
       <div class="screen">
-        <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="nav.navigateBack('/scan')"><ion-icon name="chevron-back" [flipRtl]="false" /></button>
+        <button type="button" class="back-btn" [attr.aria-label]="t('common.back')" (click)="nav.navigateBack('/scan')"><ion-icon name="chevron-back" flipRtl /></button>
         <h1 class="center-title">{{ t('scan.review.title') }}</h1>
 
         @if (session.imageUrl(); as url) {
@@ -141,6 +141,7 @@ export class ScanReviewPage {
       chosen.map((c) => ({
         name: c.name,
         kbId: c.drug?.id,
+        ...(c.strength ? { strength: c.strength } : {}),
         dose: 1,
         form: c.drug?.defaultForm ?? 'pill',
         everyN: 1,
