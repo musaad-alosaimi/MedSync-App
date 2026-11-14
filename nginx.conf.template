@@ -1,8 +1,18 @@
+map $http_x_forwarded_proto $forwarded_scheme {
+  default $http_x_forwarded_proto;
+  ""      $scheme;
+}
+
 server {
   listen ${PORT};
   listen [::]:${PORT};
   root /usr/share/nginx/html;
   index index.html;
+
+  # Link-preview tags need absolute URLs: stamp the real public origin into index.html on the fly.
+  # (Railway terminates TLS, so take the scheme from X-Forwarded-Proto.)
+  sub_filter '__ORIGIN__' '$forwarded_scheme://$http_host';
+  sub_filter_once off;
 
   gzip on;
   gzip_types text/css application/javascript application/json image/svg+xml application/manifest+json;
